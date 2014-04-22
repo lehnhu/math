@@ -224,3 +224,13 @@ std::istream& operator >>(std::istream& in, bigr& b) {
 	}
 	return in;
 }
+bigr bigr::round(int dec) const{
+	bigi new_den=bigi(10).pow(dec);
+	bigi p=new_den*numerator;
+	bigi q,r;
+	bigi::divide(p,denominator,&q,&r);
+	if(denominator<=r*2){
+		q=q+1;
+	}
+	return bigr(integer,q,new_den);
+}

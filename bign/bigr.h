@@ -33,6 +33,7 @@ public:
 
 	int sign();
 	std::string toString(int dec) const;
+	bigr round(int dec) const;
 	friend std::ostream& operator <<(std::ostream &, const bigr&);
 	friend std::istream& operator >>(std::istream &, bigr&);
 };

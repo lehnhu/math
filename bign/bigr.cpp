@@ -70,9 +70,9 @@ bigr::bigr(const char * c) {
 		c++;
 	}
 	for (;;) {
-		if ( *c > '9' || *c < '0')
+		if (*c > '9' || *c < '0')
 			break;
-		r = r * 10 + int (*c - '0');
+		r = r * 10 + int(*c - '0');
 		c++;
 	}
 	bigr f(1);
@@ -82,7 +82,7 @@ bigr::bigr(const char * c) {
 			if (*c > '9' || *c < '0')
 				break;
 			f = f / 10;
-			r = r + f * int (*c - '0');
+			r = r + f * int(*c - '0');
 			c++;
 		}
 	}
@@ -131,11 +131,11 @@ bigr bigr::operator /(const bigr&b) const {
 	bigi _denominator = denominator * (b.numerator + b.denominator * b.integer);
 	return bigr(0, _numerator, _denominator);
 }
-std::string bigr::toString(int dec) const {
+std::string bigr::toDecString(int scale) const {
 	std::stringstream out;
 	bigr tmp = *this;
 	int i;
-	for (i = 0; i < dec; i++) {
+	for (i = 0; i < scale; i++) {
 		tmp = tmp * 10;
 	}
 	bigi inte = tmp.integer;
@@ -145,18 +145,18 @@ std::string bigr::toString(int dec) const {
 		out << "-";
 	inte = bigi::abs(inte);
 	bigi q, r;
-	char *c = new char[dec];
-	for (i = 0; i < dec; i++) {
+	char *c = new char[scale];
+	for (i = 0; i < scale; i++) {
 		bigi::divide(inte, 10, &q, &r);
 		c[i] = r.intValue() + '0';
 		inte = q;
 	}
-	for (i = 0; i < dec && c[i] == '0'; i++)
+	for (i = 0; i < scale && c[i] == '0'; i++)
 		;
 	out << inte;
-	if (dec > i)
+	if (scale > i)
 		out << '.';
-	for (int j = dec - 1; j >= i; j--)
+	for (int j = scale - 1; j >= i; j--)
 		out << c[j];
 	delete[] c;
 	std::string s;
@@ -185,12 +185,47 @@ bool bigr::operator >=(const bigr& a) const {
 bool bigr::operator !=(const bigr& a) const {
 	return !(*this == a);
 }
+bigr bigr::round(int scale) const {
+	if (scale < 0)
+		return *this;
+	bigi new_den = bigi(10).pow(scale);
+	bigi p = new_den * numerator;
+	bigi q, r;
+	bigi::divide(p, denominator, &q, &r);
+	if (denominator <= r * 2) {
+		q = q + 1;
+	}
+	return bigr(integer, q, new_den);
+}
+bigr bigr::abs(const bigr& a) {
+	return a >= 0 ? a : -a;
+}
 
+bigr bigr::pow(const bigi& n, int scale) const {
+	if (*this == 0 && n <= 0)
+		throw std::logic_error("0^n n must greater than 0");
+	else if (n < 0)
+		return 0;
+	else if (n == 0)
+		return 1;
+	else if (n == 1)
+		return *this;
+	else {
+		bigr t = bigr::abs(*this);
+		if (n.isEven()) {
+			t = t.pow(n >> 1, scale);
+			return t * t;
+		} else {
+			t = t.pow(n >> 1, scale);
+			return t * t * (*this);
+		}
+	}
+}
 std::istream& operator >>(std::istream& in, bigr& b) {
 	bigr r(0);
-	std::_Ios_Fmtflags _old = in.setf(std::ios::skipws,std::ios::skipws);
+	std::_Ios_Fmtflags _old = in.setf(std::ios::skipws, std::ios::skipws);
 	char ch;
-	in>>ch;
+	in >> ch;
 	in.setf(std::ios::skipws, _old);
 	if (!in.eof()) {
 		bool is_negative = ch == '-' ? true : false;
@@ -199,38 +234,31 @@ std::istream& operator >>(std::istream& in, bigr& b) {
 			in.putback(ch);
 		}
 		for (;;) {
-			ch=in.get();
+			ch = in.get();
 			if (in.eof() || ch > '9' || ch < '0')
 				break;
+
 			r = r * 10 + int(ch - '0');
 		}
 		bigr f(1);
 		if (ch == '.') {
-			ch=in.get();
+			ch = in.get();
 			for (;;) {
 				if (ch > '9' || ch < '0')
 					break;
+
 				f = f / 10;
-				r = r + f * int (ch - '0');
-				ch=in.get();
+				r = r + f * int(ch - '0');
+				ch = in.get();
 			}
 		}
 		if (is_negative)
 			r = -r;
-		b=r;
-		if(!in.eof()){
+
+		b = r;
+		if (!in.eof()) {
 			in.putback(ch);
 		}
 	}
 	return in;
-}
-bigr bigr::round(int dec) const{
-	bigi new_den=bigi(10).pow(dec);
-	bigi p=new_den*numerator;
-	bigi q,r;
-	bigi::divide(p,denominator,&q,&r);
-	if(denominator<=r*2){
-		q=q+1;
-	}
-	return bigr(integer,q,new_den);
 }

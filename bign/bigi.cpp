@@ -182,20 +182,22 @@ bigi bigi::operator %(const bigi& b) const {
 	return r;
 }
 bigi bigi::pow(const bigi &n) const {
-	if (n < 0)
+	if(*this==0&&n<=0)
+		throw std::logic_error("0^n n must greater than 0");
+	else if(n<0)
 		return 0;
 	else if (n == 0)
 		return 1;
 	else if (n == 1)
 		return *this;
 	else {
-		bigi q, r;
-		divide(n, 2, &q, &r);
-		bigi t = pow(q);
-		if (r == 1) {
-			return t * t * (*this);
+		bigi t=bigi::abs(*this);
+		if (n.isEven()) {
+			t=t.pow(n>>1);
+			return t * t ;
 		} else {
-			return t * t;
+			t=t.pow(n>>1);
+			return t * t*(*this);
 		}
 	}
 }

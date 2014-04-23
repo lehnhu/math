@@ -24,6 +24,9 @@ public:
 	bigr operator *(const bigr&) const;
 	bigr operator /(const bigr&) const;
 
+	bigr pow(const bigi& n, int scale) const ;
+
+
 	bool operator ==(const bigr&) const;
 	bool operator <(const bigr&) const;
 	bool operator <=(const bigr&) const;
@@ -32,9 +35,11 @@ public:
 	bool operator !=(const bigr&) const;
 
 	int sign();
-	std::string toString(int dec) const;
-	bigr round(int dec) const;
+	std::string toDecString(int scale) const;
+	bigr round(int scale) const;
 	friend std::ostream& operator <<(std::ostream &, const bigr&);
-	friend std::istream& operator >>(std::istream &, bigr&);
+	friend std::istream& operator >>(std::istream& in, bigr& b) ;
+
+	static bigr abs(const bigr&);
 };
 #endif
